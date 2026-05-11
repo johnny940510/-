@@ -1,47 +1,39 @@
-:root {
-    --primary: #4ade80;
-    --bg: #0f172a;
-}
-
-* { box-sizing: border-box; }
-body, html { 
-    margin: 0; padding: 0; height: 100%; 
-    background: var(--bg); color: white;
-    font-family: sans-serif; overflow: hidden;
-}
-
+:root { --primary: #4ade80; --bg: #0f172a; }
+* { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+body, html { margin: 0; padding: 0; height: 100%; background: var(--bg); color: white; font-family: sans-serif; overflow: hidden; }
 .app { height: 100%; display: flex; flex-direction: column; }
+.screen { display: none; height: 100%; flex-direction: column; padding: 10px; }
+.screen.active { display: flex; }
 
-/* 修正首頁排版 */
-#start-screen {
-    display: none; height: 100%; align-items: center; justify-content: center;
-}
-#start-screen.active { display: flex; }
-.welcome-box { width: 90%; text-align: center; }
-.card { background: #1e293b; padding: 20px; border-radius: 20px; border: 1px solid #334155; }
+/* 開始畫面 */
+.welcome-box { width: 100%; max-width: 400px; margin: auto; text-align: center; padding: 20px; }
+.title { color: var(--primary); font-size: 32px; margin-bottom: 20px; }
+.card { background: #1e293b; padding: 25px; border-radius: 20px; border: 1px solid #334155; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
 
-/* 遊戲畫面 */
-#game-screen { display: none; height: 100%; flex-direction: column; padding: 10px; }
-#game-screen.active { display: flex; }
-
-.camera-section { flex: 3; position: relative; margin-bottom: 10px; }
-.camera-container { width: 100%; height: 100%; background: #000; border-radius: 15px; overflow: hidden; position: relative; }
+/* 遊戲畫面佈局 */
+.camera-section { flex: 3; position: relative; min-height: 200px; }
+.camera-container { width: 100%; height: 100%; background: #000; border-radius: 15px; overflow: hidden; position: relative; border: 2px solid #334155; }
 video, canvas { position: absolute; top:0; left:0; width:100%; height:100%; object-fit: cover; transform: scaleX(-1); }
 
-.stats-section { flex: 1; margin-bottom: 10px; }
+.stats-section { flex: 0.8; margin: 10px 0; }
 .stats-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
-.stat-item { background: #1e293b; padding: 8px; border-radius: 12px; text-align: center; }
-.value { color: #facc15; font-size: 20px; font-weight: bold; display: block; }
+.stat-item { background: #1e293b; padding: 10px; border-radius: 12px; text-align: center; }
+.value { color: #facc15; font-size: 22px; font-weight: bold; display: block; }
 .label { font-size: 10px; color: #94a3b8; }
 
-.battle-section { flex: 4; display: flex; flex-direction: column; background: #1e293b; border-radius: 15px; padding: 10px; }
+.battle-section { flex: 3; display: flex; flex-direction: column; background: #1e293b; border-radius: 15px; padding: 15px; }
 .battle-stage { flex: 1; position: relative; background: #020617; border-radius: 10px; overflow: hidden; }
 .character { position: absolute; bottom: 10px; font-size: 50px; transition: 0.2s; }
-#player { left: 10px; } #monster { right: 10px; }
+#player { left: 15px; } #monster { right: 15px; }
 
-.hp-bar { width: 100%; height: 10px; background: #334155; border-radius: 5px; margin-top: 10px; }
+.damage { position: absolute; right: 50px; top: 20px; color: #ef4444; font-size: 30px; font-weight: bold; opacity: 0; pointer-events: none; }
+.hit-anim { animation: fly 0.5s ease-out; }
+@keyframes fly { 0% { opacity: 1; transform: translateY(0); } 100% { opacity: 0; transform: translateY(-40px); } }
+
+.hp-bar { width: 100%; height: 12px; background: #334155; border-radius: 6px; margin-top: 10px; overflow: hidden; }
 #hp-fill { width: 100%; height: 100%; background: #ef4444; transition: 0.3s; }
+#hp-label { font-size: 11px; margin-top: 5px; text-align: center; color: #94a3b8; }
 
-.btn { width: 100%; padding: 15px; background: var(--primary); border: none; border-radius: 10px; font-weight: bold; cursor: pointer; margin-top: 10px; }
-.name-input { width: 100%; padding: 12px; border-radius: 8px; border: 1px solid #334155; background: #0f172a; color: white; }
-#hint-display { position: absolute; bottom: 5px; left: 50%; transform: translateX(-50%); color: var(--primary); font-size: 12px; }
+.btn { width: 100%; padding: 18px; background: var(--primary); border: none; border-radius: 12px; font-weight: bold; font-size: 18px; cursor: pointer; color: #0f172a; }
+.name-input { width: 100%; padding: 15px; border-radius: 10px; border: 1px solid #334155; background: #0f172a; color: white; margin-bottom: 15px; font-size: 16px; }
+#hint-display { position: absolute; bottom: 10px; left: 50%; transform: translateX(-50%); color: var(--primary); background: rgba(0,0,0,0.6); padding: 2px 10px; border-radius: 10px; font-size: 12px; white-space: nowrap; }
