@@ -3,48 +3,79 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>SQUAT HERO - 穩定單檔版</title>
+    <title>SQUAT HERO PRO</title>
     <script src="https://cdn.jsdelivr.net/npm/@mediapipe/pose/pose.js" crossorigin="anonymous"></script>
     <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
     <script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js" crossorigin="anonymous"></script>
 
     <style>
-        /* --- CSS 直接內嵌，防止導入失敗 --- */
-        :root { --primary: #4ade80; --bg: #0f172a; }
+        /* --- 視覺美化層 --- */
+        :root { 
+            --primary: #4ade80; 
+            --secondary: #facc15;
+            --danger: #ff4757;
+            --bg: #0f172a; 
+            --card: rgba(30, 41, 59, 0.7);
+        }
+
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-        body, html { margin: 0; padding: 0; height: 100%; background: var(--bg); color: white; font-family: sans-serif; overflow: hidden; }
-        .app { height: 100%; display: flex; flex-direction: column; }
-        .screen { display: none; height: 100%; flex-direction: column; padding: 15px; align-items: center; justify-content: center; }
+        body, html { margin: 0; padding: 0; height: 100%; background: var(--bg); color: white; font-family: 'Segoe UI', sans-serif; overflow: hidden; }
+        
+        .app { height: 100%; display: flex; flex-direction: column; max-width: 500px; margin: 0 auto; }
+
+        /* 螢幕切換 */
+        .screen { display: none; height: 100%; flex-direction: column; padding: 12px; }
         .screen.active { display: flex; }
 
-        /* 開始畫面 */
-        .welcome-box { width: 100%; max-width: 400px; text-align: center; }
-        .title { color: var(--primary); font-size: 32px; margin-bottom: 25px; text-shadow: 0 0 15px rgba(74, 222, 128, 0.4); }
-        .card { background: #1e293b; padding: 30px; border-radius: 24px; border: 1px solid #334155; width: 100%; }
-        .name-input { width: 100%; padding: 15px; border-radius: 12px; border: 2px solid #334155; background: #0f172a; color: white; margin-bottom: 20px; font-size: 16px; outline: none; }
-        .name-input:focus { border-color: var(--primary); }
-        .btn { width: 100%; padding: 18px; background: var(--primary); border: none; border-radius: 50px; font-weight: bold; font-size: 18px; cursor: pointer; color: #0f172a; transition: transform 0.2s; }
-        .btn:active { transform: scale(0.95); }
+        /* 開始畫面：專業排版 */
+        #start-screen { background: radial-gradient(circle at center, #1e293b 0%, #0f172a 100%); align-items: center; justify-content: center; }
+        .welcome-box { width: 100%; text-align: center; animation: fadeIn 0.8s ease; }
+        .logo { font-size: 42px; margin-bottom: 10px; display: block; }
+        .title { font-size: 28px; color: var(--primary); letter-spacing: 2px; text-shadow: 0 0 20px rgba(74, 222, 128, 0.5); margin-bottom: 30px; }
+        
+        .card { background: var(--card); backdrop-filter: blur(10px); padding: 30px; border-radius: 24px; border: 1px solid rgba(255,255,255,0.1); box-shadow: 0 20px 50px rgba(0,0,0,0.3); }
+        .name-input { width: 100%; padding: 16px; border-radius: 12px; border: 2px solid #334155; background: #020617; color: white; margin-bottom: 20px; font-size: 16px; text-align: center; }
+        .btn { width: 100%; padding: 18px; background: linear-gradient(135deg, #22c55e, #16a34a); border: none; border-radius: 50px; font-weight: bold; font-size: 18px; color: white; cursor: pointer; box-shadow: 0 10px 20px rgba(34, 197, 94, 0.3); transition: 0.2s; }
+        .btn:active { transform: scale(0.96); }
 
-        /* 遊戲排版：鏡頭在上 > 數據在中 > 遊戲在下 */
-        .camera-section { flex: 3; width: 100%; position: relative; margin-bottom: 10px; }
-        .camera-container { width: 100%; height: 100%; background: #000; border-radius: 20px; overflow: hidden; position: relative; border: 2px solid #334155; }
-        video, canvas { position: absolute; top:0; left:0; width:100%; height:100%; object-fit: cover; transform: scaleX(-1); }
+        /* 1. 鏡頭區塊 (在上) */
+        .camera-section { flex: 3; width: 100%; position: relative; margin-bottom: 8px; }
+        .camera-container { width: 100%; height: 100%; background: #000; border-radius: 20px; overflow: hidden; border: 2px solid #334155; box-shadow: inset 0 0 20px rgba(0,0,0,0.5); }
+        video, canvas { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; transform: scaleX(-1); }
+        #hint-display { position: absolute; bottom: 12px; left: 50%; transform: translateX(-50%); background: rgba(0,0,0,0.8); padding: 6px 16px; border-radius: 30px; font-size: 13px; color: var(--primary); border: 1px solid var(--primary); white-space: nowrap; z-index: 10; }
 
-        .stats-section { flex: 0.8; width: 100%; margin-bottom: 10px; }
+        /* 2. 數據區塊 (在中) */
+        .stats-section { margin-bottom: 8px; }
         .stats-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
-        .stat-item { background: #1e293b; padding: 10px; border-radius: 15px; text-align: center; border: 1px solid #334155; }
-        .value { color: #facc15; font-size: 22px; font-weight: bold; display: block; }
-        .label { font-size: 11px; color: #94a3b8; font-weight: bold; }
+        .stat-item { background: var(--card); padding: 10px; border-radius: 16px; text-align: center; border: 1px solid rgba(255,255,255,0.05); }
+        .value { color: var(--secondary); font-size: 22px; font-weight: bold; display: block; }
+        .label { font-size: 10px; color: #94a3b8; text-transform: uppercase; letter-spacing: 1px; }
 
-        .battle-section { flex: 3; width: 100%; display: flex; flex-direction: column; background: #1e293b; border-radius: 20px; padding: 15px; border: 1px solid #334155; }
-        .battle-stage { flex: 1; position: relative; background: linear-gradient(180deg, #1e293b 0%, #020617 100%); border-radius: 12px; overflow: hidden; }
-        .character { position: absolute; bottom: 15px; font-size: 60px; transition: transform 0.2s; }
-        #player { left: 20px; } #monster { right: 20px; }
+        /* 3. 戰鬥區塊 (在下) */
+        .battle-section { flex: 3.5; background: var(--card); border-radius: 20px; padding: 15px; border: 1px solid rgba(255,255,255,0.1); display: flex; flex-direction: column; position: relative; }
+        .battle-stage { flex: 1; position: relative; background: linear-gradient(180deg, #1e293b 0%, #020617 100%); border-radius: 15px; overflow: hidden; border: 1px solid #334155; }
+        
+        .character { position: absolute; bottom: 15px; font-size: 65px; transition: 0.2s cubic-bezier(0.17, 0.67, 0.83, 0.67); filter: drop-shadow(0 10px 10px rgba(0,0,0,0.5)); }
+        #player { left: 20px; }
+        #monster { right: 20px; }
 
-        .hp-bar { width: 100%; height: 14px; background: #334155; border-radius: 7px; margin-top: 15px; overflow: hidden; }
-        #hp-fill { width: 100%; height: 100%; background: #ef4444; transition: width 0.3s ease-out; }
-        #hint-display { position: absolute; bottom: 10px; left: 50%; transform: translateX(-50%); color: var(--primary); background: rgba(0,0,0,0.7); padding: 4px 15px; border-radius: 20px; font-size: 13px; border: 1px solid var(--primary); }
+        /* 傷害跳字 */
+        .dmg-popup { position: absolute; right: 60px; top: 40px; color: var(--danger); font-size: 32px; font-weight: 900; opacity: 0; pointer-events: none; text-shadow: 2px 2px 0 #000; }
+        .animate-dmg { animation: damageFly 0.6s ease-out forwards; }
+
+        @keyframes damageFly {
+            0% { opacity: 0; transform: translateY(20px) scale(0.5); }
+            50% { opacity: 1; transform: translateY(-10px) scale(1.2); }
+            100% { opacity: 0; transform: translateY(-40px) scale(1); }
+        }
+
+        /* 血條美化 */
+        .hp-area { margin-top: 15px; position: relative; }
+        .hp-bar { width: 100%; height: 16px; background: #1e293b; border-radius: 8px; border: 2px solid #334155; overflow: hidden; }
+        #hp-fill { width: 100%; height: 100%; background: linear-gradient(90deg, #ef4444, #ff7675); transition: width 0.4s cubic-bezier(0.18, 0.89, 0.32, 1.28); }
+        .hp-text { position: absolute; width: 100%; text-align: center; top: -18px; font-size: 11px; color: #94a3b8; font-weight: bold; }
+
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
     </style>
 </head>
 <body>
@@ -52,11 +83,12 @@
     <div class="app">
         <section id="start-screen" class="screen active">
             <div class="welcome-box">
-                <h1 class="title">🏋️ SQUAT HERO</h1>
+                <span class="logo">🏋️‍♂️</span>
+                <h1 class="title">SQUAT HERO</h1>
                 <div class="card">
-                    <input id="p-name" class="name-input" type="text" placeholder="輸入勇者名稱">
-                    <button id="start-btn" class="btn">開始冒險</button>
-                    <p style="font-size: 12px; color: #64748b; margin-top: 15px;">※ 需允許相機權限方可遊玩</p>
+                    <input id="p-name" class="name-input" type="text" placeholder="輸入勇者稱號">
+                    <button id="start-btn" class="btn">進入冒險</button>
+                    <p style="font-size: 11px; color: #64748b; margin-top: 15px;">請確保環境光線充足並開啟相機權限</p>
                 </div>
             </div>
         </section>
@@ -66,15 +98,15 @@
                 <div class="camera-container">
                     <video id="webcam" playsinline muted autoplay></video>
                     <canvas id="output_canvas"></canvas>
-                    <div id="hint-display">等待相機開啟...</div>
+                    <div id="hint-display">正在初始化 AI 模組...</div>
                 </div>
             </div>
 
             <div class="stats-section">
                 <div class="stats-grid">
-                    <div class="stat-item"><span class="label">STAGE</span><span id="ui-stage" class="value">1</span></div>
-                    <div class="stat-item"><span class="label">SCORE</span><span id="ui-score" class="value">0</span></div>
-                    <div class="stat-item"><span class="label">COUNT</span><span id="ui-count" class="value">0</span></div>
+                    <div class="stat-item"><span class="label">Stage</span><span id="ui-stage" class="value">1</span></div>
+                    <div class="stat-item"><span class="label">Score</span><span id="ui-score" class="value">0</span></div>
+                    <div class="stat-item"><span class="label">Count</span><span id="ui-count" class="value">0</span></div>
                 </div>
             </div>
 
@@ -82,18 +114,20 @@
                 <div class="battle-stage">
                     <div id="player" class="character">👤</div>
                     <div id="monster" class="character">👾</div>
+                    <div id="dmg-popup" class="dmg-popup">-50</div>
                 </div>
-                <div class="hp-bar"><div id="hp-fill"></div></div>
-                <p style="text-align:center; font-size:12px; color:#94a3b8; margin:5px 0 0 0;">BOSS HP</p>
+                <div class="hp-area">
+                    <div class="hp-text">BOSS HEALTH</div>
+                    <div class="hp-bar"><div id="hp-fill"></div></div>
+                </div>
             </div>
         </section>
     </div>
 
     <script>
-        /* --- JS 直接內嵌，確保點擊必執行 --- */
         const state = { stage: 1, score: 0, count: 0, hp: 100, isSquatting: false };
 
-        // 初始化 Pose 模型
+        // MediaPipe Pose 設定
         const pose = new Pose({
             locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/pose/${file}`
         });
@@ -101,8 +135,8 @@
         pose.setOptions({
             modelComplexity: 1,
             smoothLandmarks: true,
-            minDetectionConfidence: 0.5,
-            minTrackingConfidence: 0.5
+            minDetectionConfidence: 0.6,
+            minTrackingConfidence: 0.6
         });
 
         pose.onResults((results) => {
@@ -114,7 +148,9 @@
             ctx.clearRect(0, 0, canvas.width, canvas.height);
             
             if (results.poseLandmarks) {
-                drawConnectors(ctx, results.poseLandmarks, POSE_CONNECTIONS, {color: '#4ade80', lineWidth: 3});
+                // 畫出美化過的骨架
+                drawConnectors(ctx, results.poseLandmarks, POSE_CONNECTIONS, {color: '#4ade80', lineWidth: 4});
+                drawLandmarks(ctx, results.poseLandmarks, {color: '#ff4757', lineWidth: 1, radius: 3});
                 
                 const hip = results.poseLandmarks[23];
                 const knee = results.poseLandmarks[25];
@@ -123,28 +159,47 @@
                 if (hip && knee && ankle) {
                     const angle = calculateAngle(hip, knee, ankle);
                     
-                    if (angle < 115 && !state.isSquatting) {
+                    // 動作判定邏輯
+                    if (angle < 110 && !state.isSquatting) {
                         state.isSquatting = true;
-                        document.getElementById('player').style.transform = "scaleY(0.6)";
-                        hint.innerText = "⬇️ 蹲下成功！站起來攻擊！";
+                        document.getElementById('player').style.transform = "scaleY(0.7) translateY(10px)";
+                        hint.innerText = "⬇️ 蹲下！保持住！";
+                        hint.style.borderColor = "#facc15";
                     } else if (angle > 155 && state.isSquatting) {
                         state.isSquatting = false;
-                        document.getElementById('player').style.transform = "scaleY(1)";
-                        hint.innerText = "💥 攻擊！";
-                        attack();
+                        document.getElementById('player').style.transform = "scaleY(1) translateY(0)";
+                        hint.innerText = "💥 站起攻擊！";
+                        hint.style.borderColor = "#4ade80";
+                        triggerAttack();
                     }
                 }
             } else {
-                hint.innerText = "⚠️ 找不到人體，請退後至全身入鏡";
+                hint.innerText = "⚠️ 請退後，確保全身入鏡";
+                hint.style.borderColor = "#ff4757";
             }
             ctx.restore();
         });
 
-        function attack() {
-            state.count++; state.score += 100; state.hp -= 20;
+        function triggerAttack() {
+            state.count++; 
+            state.score += 150; 
+            state.hp -= 20;
+
+            // 怪物受擊動畫
+            const monster = document.getElementById('monster');
+            const dmg = document.getElementById('dmg-popup');
+            
+            monster.style.transform = "translateX(20px) rotate(15deg)";
+            setTimeout(() => monster.style.transform = "translateX(0) rotate(0)", 150);
+
+            // 跳血動畫
+            dmg.classList.add('animate-dmg');
+            setTimeout(() => dmg.classList.remove('animate-dmg'), 600);
+
             if (state.hp <= 0) { 
-                state.hp = 100; state.stage++; 
-                alert("STAGE " + (state.stage - 1) + " CLEAR!");
+                state.hp = 100; 
+                state.stage++; 
+                alert("⚔️ 恭喜擊敗 BOSS！進入第 " + state.stage + " 關");
             }
             updateUI();
         }
@@ -156,18 +211,17 @@
             document.getElementById('hp-fill').style.width = state.hp + "%";
         }
 
-        function calculateAngle(a, b, c) {
-            const radians = Math.atan2(c.y - b.y, c.x - b.x) - Math.atan2(a.y - b.y, a.x - b.x);
-            let angle = Math.abs(radians * 180.0 / Math.PI);
-            if (angle > 180.0) angle = 360 - angle;
-            return angle;
+        function calculateAngle(A, B, C) {
+            let rad = Math.atan2(C.y - B.y, C.x - B.x) - Math.atan2(A.y - B.y, A.x - B.x);
+            let ang = Math.abs(rad * 180.0 / Math.PI);
+            if (ang > 180.0) ang = 360 - ang;
+            return ang;
         }
 
-        // 按鈕啟動邏輯
-        document.getElementById('start-btn').addEventListener('click', async function() {
-            const btn = this;
-            btn.innerText = "載入中...";
-            btn.disabled = true;
+        // 開始按鈕監聽
+        document.getElementById('start-btn').onclick = async function() {
+            this.innerText = "準備中...";
+            this.disabled = true;
 
             try {
                 const video = document.getElementById('webcam');
@@ -178,14 +232,12 @@
                     onFrame: async () => { await pose.send({image: video}); },
                     width: 640, height: 480
                 });
-                
                 await camera.start();
-                console.log("Game Started");
-            } catch (err) {
-                alert("無法啟動相機。請確認：\n1. 網址開頭是 https\n2. 已允許相機權限\n\n錯誤代碼：" + err.name);
+            } catch (e) {
+                alert("相機啟動失敗，請確認是否為 HTTPS 環境並允許權限。");
                 location.reload();
             }
-        });
+        };
     </script>
 </body>
 </html>
