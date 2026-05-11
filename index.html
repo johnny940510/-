@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>我的健身打怪遊戲</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="app">
+        <h1 class="title">健身英雄：深蹲傳說</h1>
+        <p class="subtitle">AI 動作辨識 × 健身挑戰</p>
+
+        <section id="start-screen" class="screen active">
+            <div class="card center-card">
+                <h2>冒險者，報上名來</h2>
+                <input id="player-name" class="name-input" type="text" placeholder="請輸入你的名字" maxlength="15">
+                <div class="rule-box">
+                    <p class="rule-title">【戰鬥指南】</p>
+                    <ul>
+                        <li>站遠一點，讓 AI 看到你的膝蓋與腳踝。</li>
+                        <li><strong>標準深蹲：</strong>蹲下到位後站直，才算一次攻擊。</li>
+                        <li><strong>Combo 系統：</strong>連續蹲下可累積倍率傷害。</li>
+                        <li>目標是擊敗 10 關的怪物！</li>
+                    </ul>
+                </div>
+                <button id="start-btn" class="btn">進入戰場</button>
+            </div>
+        </section>
+
+        <section id="game-screen" class="screen">
+            <div id="level-transition" class="level-transition hidden">
+                <div class="level-card">
+                    <h2 id="level-title">第 1 關通過</h2>
+                    <p id="level-desc">下一隻怪物正在接近...</p>
+                    <div id="level-monster" class="level-monster">👾</div>
+                    <p id="level-countdown">3</p>
+                </div>
+            </div>
+
+            <div class="game-layout">
+                <div class="card game-panel">
+                    <div class="top-stats">
+                        <div class="stat-box"><span>得分</span><strong id="score">0</strong></div>
+                        <div class="stat-box"><span>Combo</span><strong id="combo">x0</strong></div>
+                        <div class="stat-box"><span>次數</span><strong id="squat-num">0</strong></div>
+                    </div>
+
+                    <div class="battle-area" id="battle-area">
+                        <div id="player" class="player">
+                            <div class="hero">
+                                <div class="hero-head"></div>
+                                <div class="hero-body"></div>
+                                <div class="hero-arm right"><div class="sword"><div class="blade"></div></div></div>
+                                <div class="hero-leg left"></div><div class="hero-leg right"></div>
+                            </div>
+                        </div>
+                        <div id="monster" class="monster">
+                            <div class="monster-body"></div>
+                            <div class="monster-eye left"></div><div class="monster-eye right"></div>
+                            <div class="monster-mouth"></div>
+                            <div class="monster-shadow"></div>
+                        </div>
+                        <p id="damage-text" class="damage-text"></p>
+                    </div>
+
+                    <div class="hp-bar"><div id="hp-fill"></div></div>
+                    <p id="hp-text">載入中...</p>
+                </div>
+
+                <div class="card camera-panel">
+                    <div class="camera-box">
+                        <video id="video" autoplay playsinline></video>
+                        <canvas id="canvas"></canvas>
+                    </div>
+                    <p id="status">系統準備中...</p>
+                    <div class="metrics">
+                        <p id="player-display-name">玩家：--</p>
+                        <p id="knee-angle">膝蓋角度：--</p>
+                        <p id="depth-status">動作品質：--</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="result-screen" class="screen">
+            <div class="card center-card">
+                <h2 id="result-title">挑戰結束</h2>
+                <p id="result-desc"></p>
+                <p id="result-score">總分：0</p>
+                <button id="restart-btn" class="btn">重新挑戰</button>
+            </div>
+        </section>
+    </div>
+
+    <script type="module" src="main.js"></script>
+</body>
+</html>
