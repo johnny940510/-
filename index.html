@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>我的健身打怪遊戲</title>
+    <title>健身英雄：深蹲傳說</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -21,7 +21,6 @@
                         <li>站遠一點，讓 AI 看到你的膝蓋與腳踝。</li>
                         <li><strong>標準深蹲：</strong>蹲下到位後站直，才算一次攻擊。</li>
                         <li><strong>Combo 系統：</strong>連續蹲下可累積倍率傷害。</li>
-                        <li>目標是擊敗 10 關的怪物！</li>
                     </ul>
                 </div>
                 <button id="start-btn" class="btn">進入戰場</button>
@@ -31,6 +30,7 @@
         <section id="game-screen" class="screen">
             <div id="level-transition" class="level-transition hidden">
                 <div class="level-card">
+                    <h2 id="level-small-text">STAGE CLEAR</h2>
                     <h2 id="level-title">第 1 關通過</h2>
                     <p id="level-desc">下一隻怪物正在接近...</p>
                     <div id="level-monster" class="level-monster">👾</div>
@@ -66,6 +66,7 @@
 
                     <div class="hp-bar"><div id="hp-fill"></div></div>
                     <p id="hp-text">載入中...</p>
+                    <p id="count" style="display:none">深蹲次數：0</p>
                 </div>
 
                 <div class="card camera-panel">
@@ -74,6 +75,7 @@
                         <canvas id="canvas"></canvas>
                     </div>
                     <p id="status">系統準備中...</p>
+                    <p id="hint">提示：請讓全身入鏡</p>
                     <div class="metrics">
                         <p id="player-display-name">玩家：--</p>
                         <p id="knee-angle">膝蓋角度：--</p>
@@ -92,7 +94,6 @@
             </div>
         </section>
     </div>
-
     <script type="module" src="main.js"></script>
 </body>
 </html>
