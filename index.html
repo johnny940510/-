@@ -2,167 +2,51 @@
 <html lang="zh-TW">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>SQUAT HERO - 終極修復版</title>
-    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/pose/pose.js" crossorigin="anonymous"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js" crossorigin="anonymous"></script>
-    <style>
-        :root { --primary: #4ade80; --danger: #ef4444; --bg: #0f172a; }
-        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-        body { margin: 0; background: var(--bg); color: white; font-family: system-ui, -apple-system, sans-serif; overflow: hidden; }
-        .app { max-width: 600px; margin: 0 auto; height: 100vh; display: flex; flex-direction: column; padding: 10px; }
-        .screen { display: none; flex-direction: column; height: 100%; }
-        .screen.active { display: flex; }
-
-        /* UI 元件 */
-        .card { background: rgba(30, 41, 59, 0.9); border-radius: 16px; padding: 15px; border: 1px solid rgba(255,255,255,0.1); margin-bottom: 10px; }
-        .stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 10px; }
-        .stat-box { background: #1e293b; padding: 8px; border-radius: 10px; text-align: center; border: 1px solid #334155; }
-        .stat-val { color: #facc15; font-size: 20px; font-weight: bold; display: block; }
-        .stat-lab { font-size: 10px; color: #94a3b8; }
-
-        /* 戰鬥畫面 */
-        .battle-view { position: relative; height: 140px; background: #020617; border-radius: 12px; overflow: hidden; border: 1px solid #334155; }
-        .sprite { position: absolute; bottom: 10px; font-size: 50px; transition: 0.2s; }
-        #p-sprite { left: 20px; }
-        #m-sprite { right: 20px; }
-        
-        /* 血條 */
-        .hp-bar { width: 100%; height: 8px; background: #334155; border-radius: 4px; overflow: hidden; margin-top: 10px; }
-        #hp-fill { width: 100%; height: 100%; background: var(--danger); transition: 0.3s; }
-
-        /* 相機 */
-        .camera-box { position: relative; width: 100%; aspect-ratio: 4/3; background: #000; border-radius: 12px; overflow: hidden; }
-        video, canvas { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; transform: scaleX(-1); }
-
-        .hint { margin-top: 10px; padding: 12px; border-radius: 10px; text-align: center; font-weight: bold; background: #1e293b; border: 1px solid var(--primary); color: var(--primary); }
-        .btn { width: 100%; padding: 16px; background: var(--primary); color: #000; border: none; border-radius: 30px; font-weight: bold; font-size: 18px; cursor: pointer; }
-    </style>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>健身英雄：深蹲傳說</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/pose/pose.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js"></script>
 </head>
 <body>
     <div class="app">
-        <section id="s-start" class="screen active">
-            <h1 style="text-align:center; color:var(--primary)">SQUAT HERO</h1>
-            <div class="card" style="margin-top:auto">
-                <input id="in-name" style="width:100%; padding:12px; border-radius:8px; margin-bottom:10px" placeholder="輸入勇者名字">
-                <button onclick="bootGame()" class="btn">開始遊戲</button>
-                <p style="font-size:12px; color:#94a3b8; text-align:center; margin-top:10px">請確保身處 HTTPS 環境並允許相機權限</p>
+        <h1 class="title">🏋️ 健身英雄：深蹲傳說</h1>
+
+        <section id="start-screen" class="screen active">
+            <div class="card">
+                <h2>冒險者，報上名來</h2>
+                <input id="p-name" class="name-input" type="text" placeholder="輸入你的勇者稱號...">
+                <button id="start-btn" class="btn">進入戰場</button>
             </div>
         </section>
 
-        <section id="s-game" class="screen">
-            <div class="stats">
-                <div class="stat-box"><span class="stat-lab">STAGE</span><span id="u-stage" class="stat-val">1</span></div>
-                <div class="stat-box"><span class="stat-lab">SCORE</span><span id="u-score" class="stat-val">0</span></div>
-                <div class="stat-box"><span class="stat-lab">COUNT</span><span id="u-count" class="stat-val">0</span></div>
+        <section id="game-screen" class="screen">
+            <div class="stats-grid">
+                <div class="stat-item"><span class="label">STAGE</span><span id="ui-stage" class="value">1</span></div>
+                <div class="stat-item"><span class="label">SCORE</span><span id="ui-score" class="value">0</span></div>
+                <div class="stat-item"><span class="label">COUNT</span><span id="ui-count" class="stat-value">0</span></div>
             </div>
 
-            <div class="card" style="padding:10px">
-                <div class="battle-view">
-                    <div id="p-sprite" class="sprite">👤</div>
-                    <div id="m-sprite" class="sprite">👾</div>
-                </div>
+            <div class="battle-stage">
+                <div id="player" class="character">👤</div>
+                <div id="monster" class="character">👾</div>
+                <div id="dmg-text" class="damage">-50</div>
+            </div>
+            
+            <div class="hp-container">
                 <div class="hp-bar"><div id="hp-fill"></div></div>
+                <p id="hp-label">BOSS HP: 100/100</p>
             </div>
 
-            <div class="camera-box">
-                <video id="v" playsinline></video>
-                <canvas id="c"></canvas>
+            <div class="camera-container">
+                <video id="webcam" playsinline></video>
+                <canvas id="output_canvas"></canvas>
+                <div id="hint-display">等待相機初始化...</div>
             </div>
-            <div id="msg" class="hint">等待相機初始化...</div>
         </section>
     </div>
 
-    <script>
-        let game = { stage: 1, score: 0, count: 0, hp: 100, isSquat: false };
-        
-        function bootGame() {
-            // 檢查 Mediapipe 是否正確載入
-            if (typeof Pose === 'undefined') {
-                alert("插件載入失敗，請檢查網路連線或是否使用了 HTTPS！");
-                return;
-            }
-            document.getElementById('s-start').classList.remove('active');
-            document.getElementById('s-game').classList.add('active');
-            initPose();
-        }
-
-        function initPose() {
-            const video = document.getElementById('v');
-            const canvas = document.getElementById('c');
-            const ctx = canvas.getContext('2d');
-            const msg = document.getElementById('msg');
-
-            const pose = new Pose({
-                locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/pose/${file}`
-            });
-
-            pose.setOptions({
-                modelComplexity: 1,
-                smoothLandmarks: true,
-                minDetectionConfidence: 0.4,
-                minTrackingConfidence: 0.4
-            });
-
-            pose.onResults((res) => {
-                canvas.width = video.videoWidth;
-                canvas.height = video.videoHeight;
-                ctx.save();
-                ctx.clearRect(0, 0, canvas.width, canvas.height);
-                
-                if (res.poseLandmarks) {
-                    msg.innerText = "✅ 偵測成功！請開始深蹲";
-                    msg.style.borderColor = "#4ade80";
-                    
-                    // 繪製骨架幫助確認
-                    drawConnectors(ctx, res.poseLandmarks, POSE_CONNECTIONS, {color: '#00FF00', lineWidth: 4});
-                    drawLandmarks(ctx, res.poseLandmarks, {color: '#FF0000', lineWidth: 2});
-
-                    // 邏輯計算
-                    const hip = res.poseLandmarks[23];
-                    const knee = res.poseLandmarks[25];
-                    const ankle = res.poseLandmarks[27];
-                    const angle = Math.abs((Math.atan2(ankle.y - knee.y, ankle.x - knee.x) - Math.atan2(hip.y - knee.y, hip.x - knee.x)) * 180 / Math.PI);
-                    
-                    if (angle < 110 && !game.isSquat) {
-                        game.isSquat = true;
-                        document.getElementById('p-sprite').style.transform = "scaleY(0.6)";
-                        msg.innerText = "⬇️ 蹲下了！站起來！";
-                    } else if (angle > 150 && game.isSquat) {
-                        game.isSquat = false;
-                        game.count++;
-                        game.score += 100;
-                        game.hp -= 20;
-                        document.getElementById('p-sprite').style.transform = "scaleY(1)";
-                        updateUI();
-                        msg.innerText = "🔥 完美深蹲！";
-                        if(game.hp <= 0) { game.hp = 100; game.stage++; updateUI(); }
-                    }
-                } else {
-                    msg.innerText = "⚠️ 找不到人體，請站遠一點並全身入鏡";
-                    msg.style.borderColor = "#ef4444";
-                }
-                ctx.restore();
-            });
-
-            const camera = new Camera(video, {
-                onFrame: async () => { await pose.send({image: video}); },
-                width: 640,
-                height: 480
-            });
-            camera.start().catch(err => {
-                alert("相機無法開啟，請確認是否為 HTTPS 環境或權限已開啟。");
-                msg.innerText = "❌ 相機啟動失敗";
-            });
-        }
-
-        function updateUI() {
-            document.getElementById('u-stage').innerText = game.stage;
-            document.getElementById('u-score').innerText = game.score;
-            document.getElementById('u-count').innerText = game.count;
-            document.getElementById('hp-fill').style.width = game.hp + "%";
-        }
-    </script>
+    <script src="script.js"></script>
 </body>
 </html>
