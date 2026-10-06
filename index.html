@@ -1,180 +1,294 @@
 <!DOCTYPE html>
 <html lang="zh-TW">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>SQUAT HERO PRO - 全身偵測版</title>
-    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/pose/pose.js" crossorigin="anonymous"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js" crossorigin="anonymous"></script>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>深蹲 RPG - 聖光騎士遠征</title>
+  
+  <!-- 引入 MediaPipe Pose 與 相機工具 -->
+  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/pose/pose.js" crossorigin="anonymous"></script>
 
-    <style>
-        :root { --primary: #4ade80; --secondary: #facc15; --danger: #ff4757; --bg: #0f172a; --card: rgba(30, 41, 59, 0.7); }
-        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-        body, html { margin: 0; padding: 0; height: 100%; background: var(--bg); color: white; font-family: sans-serif; overflow: hidden; }
-        .app { height: 100%; display: flex; flex-direction: column; max-width: 500px; margin: 0 auto; }
-        .screen { display: none; height: 100%; flex-direction: column; padding: 12px; }
-        .screen.active { display: flex; }
+  <style>
+    :root {
+      --bg-color: #0f172a;
+      --card-bg: #1e293b;
+      --primary: #38bdf8;
+      --accent: #eab308;
+      --text: #f8fafc;
+    }
 
-        /* 開始畫面 */
-        #start-screen { align-items: center; justify-content: center; background: radial-gradient(circle, #1e293b 0%, #0f172a 100%); }
-        .card { background: var(--card); backdrop-filter: blur(10px); padding: 30px; border-radius: 24px; border: 1px solid rgba(255,255,255,0.1); text-align: center; width: 90%; }
-        .btn { width: 100%; padding: 18px; background: var(--primary); border: none; border-radius: 50px; font-weight: bold; font-size: 18px; color: #0f172a; cursor: pointer; }
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    }
 
-        /* 遊戲排版 */
-        .camera-section { flex: 4; position: relative; margin-bottom: 8px; }
-        .camera-container { width: 100%; height: 100%; background: #000; border-radius: 20px; overflow: hidden; border: 2px solid #334155; }
-        video, canvas { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; transform: scaleX(-1); }
-        
-        #hint-display { position: absolute; bottom: 12px; left: 50%; transform: translateX(-50%); background: rgba(0,0,0,0.85); padding: 8px 20px; border-radius: 30px; font-size: 14px; color: white; border: 1px solid var(--primary); white-space: nowrap; z-index: 10; transition: 0.3s; }
-        .hint-warning { border-color: var(--danger) !important; color: var(--danger) !important; }
+    body {
+      background-color: var(--bg-color);
+      color: var(--text);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
 
-        .stats-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 8px; }
-        .stat-item { background: var(--card); padding: 10px; border-radius: 16px; text-align: center; border: 1px solid rgba(255,255,255,0.05); }
-        .value { color: var(--secondary); font-size: 22px; font-weight: bold; display: block; }
-        .label { font-size: 10px; color: #94a3b8; }
+    #app {
+      width: 100%;
+      max-width: 480px;
+      height: 100vh;
+      max-height: 850px;
+      background: #111827;
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+    }
 
-        .battle-section { flex: 3; background: var(--card); border-radius: 20px; padding: 15px; display: flex; flex-direction: column; }
-        .battle-stage { flex: 1; position: relative; background: #020617; border-radius: 15px; overflow: hidden; }
-        .character { position: absolute; bottom: 15px; font-size: 60px; transition: 0.2s; }
-        #player { left: 20px; } #monster { right: 20px; }
+    /* 頂部資訊欄 */
+    header {
+      background: var(--card-bg);
+      padding: 12px 16px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid #334155;
+      z-index: 10;
+    }
 
-        .hp-bar { width: 100%; height: 12px; background: #1e293b; border-radius: 6px; margin-top: 10px; overflow: hidden; border: 1px solid #334155; }
-        #hp-fill { width: 100%; height: 100%; background: var(--danger); transition: 0.4s; }
-    </style>
+    .user-info {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .user-name { font-weight: bold; color: var(--primary); }
+    .user-level { font-size: 0.8rem; color: #94a3b8; }
+    .coins { font-weight: bold; color: var(--accent); }
+
+    /* 畫面切換控制 */
+    .screen {
+      display: none;
+      flex: 1;
+      padding: 16px;
+      flex-direction: column;
+      overflow-y: auto;
+    }
+
+    .screen.active {
+      display: flex;
+    }
+
+    /* 通用按鈕與卡片 */
+    button {
+      background: #0284c7;
+      color: white;
+      border: none;
+      padding: 10px 16px;
+      border-radius: 8px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    button:hover { background: #0369a1; }
+    button:disabled { background: #475569; cursor: not-allowed; }
+
+    .small-btn { padding: 6px 12px; font-size: 0.85rem; }
+
+    .feature-card, .shop-item-card {
+      background: var(--card-bg);
+      padding: 12px;
+      border-radius: 8px;
+      margin-bottom: 10px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border: 1px solid #334155;
+    }
+
+    /* 輸入框 */
+    input[type="text"] {
+      width: 100%;
+      padding: 10px;
+      border-radius: 6px;
+      border: 1px solid #334155;
+      background: #0f172a;
+      color: white;
+      margin-bottom: 12px;
+    }
+
+    /* 遠征提示 */
+    .walk-msg { font-size: 0.85rem; color: #94a3b8; margin-top: 4px; }
+    .walk-msg.ok { color: #4ade80; }
+    .walk-msg.warn { color: #f87171; }
+
+    /* 戰鬥畫面與畫布覆蓋 */
+    .battle-container {
+      position: relative;
+      width: 100%;
+      height: 320px;
+      background: #000;
+      border-radius: 8px;
+      overflow: hidden;
+      margin-bottom: 12px;
+    }
+
+    #webcam, #canvas {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    #canvas { z-index: 2; }
+
+    .hp-bar-bg {
+      width: 100%;
+      height: 16px;
+      background: #334155;
+      border-radius: 8px;
+      overflow: hidden;
+      margin-top: 6px;
+    }
+
+    .hp-bar-fill {
+      height: 100%;
+      background: #ef4444;
+      width: 100%;
+      transition: width 0.2s;
+    }
+
+    .floating-dmg {
+      font-size: 1.5rem;
+      font-weight: bold;
+      color: #f87171;
+      text-align: center;
+      min-height: 2rem;
+    }
+  </style>
 </head>
 <body>
 
-    <div class="app">
-        <section id="start-screen" class="screen active">
-            <div class="card">
-                <h1 style="color:var(--primary)">🏋️ SQUAT HERO</h1>
-                <p style="color:#94a3b8; font-size:14px; margin-bottom:20px;">請將手機放遠，直到看到全身</p>
-                <button id="start-btn" class="btn">開始挑戰</button>
-            </div>
-        </section>
+<div id="app">
+  <!-- 頂部狀態列 -->
+  <header>
+    <div class="user-info">
+      <span class="user-name" id="lobbyName">勇者</span>
+      <span class="user-level" id="playerLevelText">LV.1 聖殿騎士</span>
+    </div>
+    <div class="coins" id="coinText">🪙 1200</div>
+  </header>
 
-        <section id="game-screen" class="screen">
-            <div class="camera-section">
-                <div class="camera-container">
-                    <video id="webcam" playsinline muted autoplay></video>
-                    <canvas id="output_canvas"></canvas>
-                    <div id="hint-display">正在啟動相機...</div>
-                </div>
-            </div>
+  <!-- 1. 登入畫面 -->
+  <div id="loginScreen" class="screen active">
+    <h2 style="margin-bottom: 16px; text-align: center;">🛡️ 深蹲 RPG 聖光遠征</h2>
+    <input type="text" id="nameInput" placeholder="請輸入勇者名字..." />
+    <button id="startBtn">進入冒險</button>
+  </div>
 
-            <div class="stats-grid">
-                <div class="stat-item"><span class="label">STAGE</span><span id="ui-stage" class="value">1</span></div>
-                <div class="stat-item"><span class="label">SCORE</span><span id="ui-score" class="value">0</span></div>
-                <div class="stat-item"><span class="label">COUNT</span><span id="ui-count" class="value">0</span></div>
-            </div>
+  <!-- 2. 大廳畫面 -->
+  <div id="lobbyScreen" class="screen">
+    <h3>⚔️ 冒險者大廳</h3>
+    <div class="feature-card" style="flex-direction: column; align-items: flex-start; margin-top: 12px;">
+      <div>🚶 GPS 遠征累積：<strong id="lobbyWalkDist">0.00</strong> km</div>
+      <div>⚡ 當前移動時速：<span id="lobbyWalkSpeed">0.0</span> km/h</div>
+      <div id="lobbyWalkMsg" class="walk-msg">💤 原地休憩中</div>
+    </div>
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 12px;">
+      <button onclick="openMap()">⚔️ 進入地城</button>
+      <button onclick="openRole()">🔨 鐵匠鋪裝備</button>
+      <button onclick="openPets()">🐾 戰寵夥伴</button>
+      <button onclick="openGacha()">🔮 祈願抽卡</button>
+      <button onclick="openDaily()" style="grid-column: span 2;">📅 每日簽到</button>
+    </div>
+  </div>
 
-            <div class="battle-section">
-                <div class="battle-stage">
-                    <div id="player" class="character">👤</div>
-                    <div id="monster" class="character">👾</div>
-                </div>
-                <div class="hp-bar"><div id="hp-fill"></div></div>
-                <p style="text-align:center; font-size:11px; color:#94a3b8; margin:5px 0 0 0;">BOSS HEALTH</p>
-            </div>
-        </section>
+  <!-- 3. 地圖選擇畫面 -->
+  <div id="mapScreen" class="screen">
+    <h3>🗺️ 選擇地城關卡</h3>
+    <div id="mapNodes" style="display: flex; flex-direction: column; gap: 8px; margin-top: 12px;"></div>
+    <button onclick="showScreen('lobbyScreen')" style="margin-top: auto;">返回大廳</button>
+  </div>
+
+  <!-- 4. 角色與鐵匠鋪 -->
+  <div id="roleScreen" class="screen">
+    <h3 id="roleTitle">殿堂騎士階級</h3>
+    <p id="roleDesc" style="color:#aaa; font-size:0.9rem; margin-bottom:12px;"></p>
+    <button onclick="upgradeRole()" style="margin-bottom: 12px;">進階提升階級</button>
+    <h4>🛡️ 裝備強化</h4>
+    <div id="shopItems" style="margin-top: 8px;"></div>
+    <button onclick="showScreen('lobbyScreen')" style="margin-top: auto;">返回大廳</button>
+  </div>
+
+  <!-- 5. 戰寵畫面 -->
+  <div id="petScreen" class="screen">
+    <h3>🐾 戰寵夥伴</h3>
+    <div id="petList" style="margin-top: 12px;"></div>
+    <button onclick="showScreen('lobbyScreen')" style="margin-top: auto;">返回大廳</button>
+  </div>
+
+  <!-- 6. 抽卡畫面 -->
+  <div id="gachaScreen" class="screen" style="text-align: center;">
+    <h3>🔮 聖光祭壇祈願</h3>
+    <p style="color:#aaa; margin: 12px 0;">消耗 300 🪙 隨機召喚戰寵夥伴</p>
+    <button onclick="drawGacha()">進行祈願 (300🪙)</button>
+    <div id="gachaResult" style="margin-top: 24px; font-size: 1.1rem; font-weight: bold;"></div>
+    <button onclick="showScreen('lobbyScreen')" style="margin-top: auto;">返回大廳</button>
+  </div>
+
+  <!-- 7. 每日簽到 -->
+  <div id="dailyScreen" class="screen">
+    <h3>📅 每日簽到獎勵</h3>
+    <div id="dailyList" style="margin: 12px 0;"></div>
+    <button onclick="claimDaily()">領取今日獎勵</button>
+    <button onclick="showScreen('lobbyScreen')" style="margin-top: auto;">返回大廳</button>
+  </div>
+
+  <!-- 8. 戰鬥遊戲畫面 -->
+  <div id="gameScreen" class="screen">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+      <h3 id="stageText">地城 STAGE 1</h3>
+      <span id="battlePetLabel" style="font-size:0.9rem; color:var(--primary);"></span>
+    </div>
+    
+    <div class="battle-container">
+      <video id="webcam" playsinline></video>
+      <canvas id="canvas"></canvas>
     </div>
 
-    <script>
-        const state = { stage: 1, score: 0, count: 0, hp: 100, isSquatting: false };
-        const video = document.getElementById('webcam');
-        const hint = document.getElementById('hint-display');
+    <div style="margin-bottom: 8px;">
+      <div style="display: flex; justify-content: space-between;">
+        <span id="cameraStatus">🛡️ 領主血條</span>
+        <span id="hpText">100 / 100</span>
+      </div>
+      <div class="hp-bar-bg"><div id="hpFill" class="hp-bar-fill"></div></div>
+    </div>
 
-        const pose = new Pose({
-            locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/pose/${file}`
-        });
+    <div id="floatingText" class="floating-dmg"></div>
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+      <span id="combo" style="color: var(--accent); font-weight: bold;">COMBO x0</span>
+      <span id="battleWeaponText" style="font-size:0.85rem; color:#aaa;"></span>
+    </div>
+    <div id="debug" style="font-size: 0.8rem; color: #64748b; text-align: center;">膝蓋角度：0° (偵測中)</div>
 
-        pose.setOptions({
-            modelComplexity: 1,
-            smoothLandmarks: true,
-            minDetectionConfidence: 0.7, // 提高信心門檻
-            minTrackingConfidence: 0.7
-        });
+    <button onclick="showScreen('mapScreen')" style="margin-top: auto; background: #ef4444;">撤退離開</button>
+  </div>
+</div>
 
-        pose.onResults((results) => {
-            const canvas = document.getElementById('output_canvas');
-            const ctx = canvas.getContext('2d');
-            ctx.save();
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            
-            if (results.poseLandmarks) {
-                // 取得關鍵點
-                const hip = results.poseLandmarks[23];  // 髖
-                const knee = results.poseLandmarks[25]; // 膝
-                const ankle = results.poseLandmarks[27]; // 踝
+<!-- Firebase SDK (v9 相容模式) -->
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 
-                // --- 核心修改：全身檢核邏輯 ---
-                // 只有當膝蓋和踝關節的偵測信心度都高時，才進行判斷
-                const isFullBodyVisible = knee.visibility > 0.6 && ankle.visibility > 0.6;
+<!-- 主程式腳本 -->
+<script src="main.js"></script>
 
-                if (!isFullBodyVisible) {
-                    hint.innerText = "⚠️ 請再後退一點，需拍到膝蓋與腳踝";
-                    hint.classList.add('hint-warning');
-                    drawConnectors(ctx, results.poseLandmarks, POSE_CONNECTIONS, {color: '#ff4757', lineWidth: 2});
-                } else {
-                    hint.classList.remove('hint-warning');
-                    drawConnectors(ctx, results.poseLandmarks, POSE_CONNECTIONS, {color: '#4ade80', lineWidth: 4});
-                    
-                    const angle = calculateAngle(hip, knee, ankle);
-                    
-                    // 偵測深蹲動作 (角度小於 110 度算蹲下，大於 150 度算站起)
-                    if (angle < 110 && !state.isSquatting) {
-                        state.isSquatting = true;
-                        document.getElementById('player').style.transform = "scaleY(0.7) translateY(15px)";
-                        hint.innerText = "✅ 蹲下成功！快站起來！";
-                    } else if (angle > 155 && state.isSquatting) {
-                        state.isSquatting = false;
-                        document.getElementById('player').style.transform = "scaleY(1) translateY(0)";
-                        hint.innerText = "💥 站立攻擊成功！";
-                        attack();
-                    } else if (!state.isSquatting) {
-                        hint.innerText = "💪 請準備深蹲 (目前的膝蓋角度: " + Math.round(angle) + "°)";
-                    }
-                }
-            } else {
-                hint.innerText = "❌ 找不到人體，請退後";
-                hint.classList.add('hint-warning');
-            }
-            ctx.restore();
-        });
-
-        function attack() {
-            state.count++; state.score += 150; state.hp -= 20;
-            const monster = document.getElementById('monster');
-            monster.style.transform = "translateX(20px) scale(1.2)";
-            setTimeout(() => monster.style.transform = "translateX(0) scale(1)", 150);
-            if (state.hp <= 0) { state.hp = 100; state.stage++; alert("擊敗魔王！進入第 " + state.stage + " 關"); }
-            updateUI();
-        }
-
-        function updateUI() {
-            document.getElementById('ui-stage').innerText = state.stage;
-            document.getElementById('ui-score').innerText = state.score;
-            document.getElementById('ui-count').innerText = state.count;
-            document.getElementById('hp-fill').style.width = state.hp + "%";
-        }
-
-        function calculateAngle(A, B, C) {
-            let rad = Math.atan2(C.y - B.y, C.x - B.x) - Math.atan2(A.y - B.y, A.x - B.x);
-            let ang = Math.abs(rad * 180.0 / Math.PI);
-            if (ang > 180.0) ang = 360 - ang;
-            return ang;
-        }
-
-        document.getElementById('start-btn').onclick = async function() {
-            document.getElementById('start-screen').classList.remove('active');
-            document.getElementById('game-screen').classList.add('active');
-            const camera = new Camera(video, {
-                onFrame: async () => { await pose.send({image: video}); },
-                width: 640, height: 480
-            });
-            camera.start();
-        };
-    </script>
 </body>
 </html>
