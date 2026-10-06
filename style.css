@@ -1,39 +1,218 @@
-:root { --primary: #4ade80; --bg: #0f172a; }
-* { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-body, html { margin: 0; padding: 0; height: 100%; background: var(--bg); color: white; font-family: sans-serif; overflow: hidden; }
-.app { height: 100%; display: flex; flex-direction: column; }
-.screen { display: none; height: 100%; flex-direction: column; padding: 10px; }
-.screen.active { display: flex; }
+/* 全域重設 */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
 
-/* 開始畫面 */
-.welcome-box { width: 100%; max-width: 400px; margin: auto; text-align: center; padding: 20px; }
-.title { color: var(--primary); font-size: 32px; margin-bottom: 20px; }
-.card { background: #1e293b; padding: 25px; border-radius: 20px; border: 1px solid #334155; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+body, html {
+  width: 100%;
+  height: 100%;
+  background-color: #0d0d1a;
+  color: #ffffff;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  overflow-x: hidden;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
 
-/* 遊戲畫面佈局 */
-.camera-section { flex: 3; position: relative; min-height: 200px; }
-.camera-container { width: 100%; height: 100%; background: #000; border-radius: 15px; overflow: hidden; position: relative; border: 2px solid #334155; }
-video, canvas { position: absolute; top:0; left:0; width:100%; height:100%; object-fit: cover; transform: scaleX(-1); }
+/* App 容器與 Main */
+main.app-container {
+  width: 100%;
+  max-width: 480px;
+  height: 100vh;
+  max-height: 850px;
+  background: #121225;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 0 30px rgba(0, 0, 0, 0.8);
+  display: flex;
+  flex-direction: column;
+  border-radius: 12px;
+}
 
-.stats-section { flex: 0.8; margin: 10px 0; }
-.stats-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
-.stat-item { background: #1e293b; padding: 10px; border-radius: 12px; text-align: center; }
-.value { color: #facc15; font-size: 22px; font-weight: bold; display: block; }
-.label { font-size: 10px; color: #94a3b8; }
+/* Screen 頁面切換 */
+.screen {
+  display: none;
+  width: 100%;
+  height: 100%;
+  padding: 15px;
+  flex-direction: column;
+  justify-content: space-between;
+  overflow-y: auto;
+}
 
-.battle-section { flex: 3; display: flex; flex-direction: column; background: #1e293b; border-radius: 15px; padding: 15px; }
-.battle-stage { flex: 1; position: relative; background: #020617; border-radius: 10px; overflow: hidden; }
-.character { position: absolute; bottom: 10px; font-size: 50px; transition: 0.2s; }
-#player { left: 15px; } #monster { right: 15px; }
+.screen.active {
+  display: flex;
+}
 
-.damage { position: absolute; right: 50px; top: 20px; color: #ef4444; font-size: 30px; font-weight: bold; opacity: 0; pointer-events: none; }
-.hit-anim { animation: fly 0.5s ease-out; }
-@keyframes fly { 0% { opacity: 1; transform: translateY(0); } 100% { opacity: 0; transform: translateY(-40px); } }
+/* UI 面板 */
+.panel {
+  width: 100%;
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(0, 243, 255, 0.25);
+  border-radius: 14px;
+  padding: 12px;
+  margin-bottom: 10px;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
+}
 
-.hp-bar { width: 100%; height: 12px; background: #334155; border-radius: 6px; margin-top: 10px; overflow: hidden; }
-#hp-fill { width: 100%; height: 100%; background: #ef4444; transition: 0.3s; }
-#hp-label { font-size: 11px; margin-top: 5px; text-align: center; color: #94a3b8; }
+.scroll-panel {
+  flex: 1;
+  overflow-y: auto;
+}
 
-.btn { width: 100%; padding: 18px; background: var(--primary); border: none; border-radius: 12px; font-weight: bold; font-size: 18px; cursor: pointer; color: #0f172a; }
-.name-input { width: 100%; padding: 15px; border-radius: 10px; border: 1px solid #334155; background: #0f172a; color: white; margin-bottom: 15px; font-size: 16px; }
-#hint-display { position: absolute; bottom: 10px; left: 50%; transform: translateX(-50%); color: var(--primary); background: rgba(0,0,0,0.6); padding: 2px 10px; border-radius: 10px; font-size: 12px; white-space: nowrap; }
+.center-box {
+  margin: auto 0;
+  width: 100%;
+  text-align: center;
+}
+
+h1, h2, h3 {
+  text-shadow: 0 0 8px rgba(0, 243, 255, 0.6);
+  color: #fff;
+  text-align: center;
+  margin-bottom: 8px;
+}
+
+.sub-text {
+  text-align: center;
+  margin-bottom: 8px;
+}
+
+/* 輸入框與按鈕 */
+input[type="text"] {
+  width: 100%;
+  padding: 10px;
+  border-radius: 8px;
+  border: none;
+  font-size: 1rem;
+  margin-bottom: 10px;
+  text-align: center;
+}
+
+button {
+  width: 100%;
+  background: linear-gradient(135deg, #4e54c8, #8f94fb);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  color: #ffffff;
+  font-size: 0.95rem;
+  font-weight: bold;
+  padding: 10px 15px;
+  border-radius: 20px;
+  cursor: pointer;
+  margin: 4px 0;
+  box-shadow: 0 0 10px rgba(78, 84, 200, 0.5);
+  transition: all 0.2s ease-in-out;
+}
+
+button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 0 16px rgba(143, 148, 251, 0.8);
+}
+
+.action-btn { margin-bottom: 10px; }
+.retreat-btn { margin-top: 6px; }
+
+.small-btn {
+  width: auto;
+  padding: 6px 12px;
+  font-size: 0.85rem;
+  border-radius: 12px;
+}
+
+.feature-card, .shop-item-card {
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 10px;
+  padding: 10px;
+  margin-bottom: 8px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.user-title { font-size: 1.1rem; }
+.gps-info { margin-top: 6px; font-size: 0.85rem; color: #8f94fb; }
+.walk-msg { font-size: 0.85rem; color: #aaa; margin-top: 4px; }
+.walk-msg.ok { color: #4caf50; }
+.walk-msg.warn { color: #ff9800; }
+.gacha-res { margin-top: 15px; font-size: 1.1rem; min-height: 30px; color: #eab308; }
+
+/* 體感視訊與 Canvas 容器 */
+.game-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+}
+
+.sub-info { font-size: 0.8rem; color: #38bdf8; }
+
+.game-view-container {
+  position: relative;
+  width: 100%;
+  flex: 1;
+  min-height: 380px;
+  background: #000;
+  border-radius: 14px;
+  overflow: hidden;
+  border: 2px solid rgba(0, 243, 255, 0.4);
+}
+
+video, canvas {
+  position: absolute;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  object-fit: cover;
+  transform: scaleX(-1);
+}
+
+.hud-overlay {
+  position: absolute;
+  top: 10px; left: 10px; right: 10px;
+  z-index: 10;
+  pointer-events: none;
+}
+
+.hud-top { display: flex; justify-content: space-between; align-items: center; }
+.tag { background: rgba(0,0,0,0.6); padding: 3px 6px; border-radius: 4px; font-size: 0.75rem; }
+.pet-tag { font-size: 0.8rem; color: #ffca28; }
+
+.hp-bar {
+  width: 100%;
+  height: 16px;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 8px;
+  overflow: hidden;
+  border: 1px solid rgba(255,255,255,0.4);
+  margin-top: 6px;
+}
+
+.hp-fill {
+  height: 100%;
+  width: 100%;
+  background: linear-gradient(90deg, #ff416c, #ff4b2b);
+  transition: width 0.2s ease;
+}
+
+.hud-mid {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 4px;
+  font-size: 0.9rem;
+  font-weight: bold;
+}
+.combo-text { color: #ffca28; }
+
+.hud-bot {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.8rem;
+  margin-top: 4px;
+  color: #4fc3f7;
+}
+.dmg-text { color: #ff416c; font-weight: bold; }
