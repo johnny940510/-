@@ -17,7 +17,7 @@ const db = firebase.firestore();
 
 // ==================== 1. 全域資料與初始化 ====================
 const defaultData = {
-  name: "勇者", coins: 1200, stage: 1, score: 0, energy: 0, combo: 0, squat: 0,
+  name: "勇者", coins: 1000, stage: 1, score: 0, energy: 0, combo: 0, squat: 0,
   roleLevel: 1, roleAttack: 10, dailyDay: 1, lastClaim: "", walkDistance: 0.0,
   shop: [
     { id: "weapon_1", name: "鏽鐵短劍", icon: "🗡️", level: 1, baseStat: 3, cost: 100, desc: "新手必備基礎短劍" },
@@ -34,7 +34,7 @@ const defaultData = {
   ]
 };
 
-let data = JSON.parse(localStorage.getItem("squatRPG")) || defaultData;
+let data = JSON.parse(JSON.stringify(defaultData));
 let bossHp = 100, maxBossHp = 100, currentBattleStage = 1;
 let squatState = "up", lastAttackTime = 0, lastPosition = null, isSettling = false;
 let globalPose = null, globalCamera = null, isCameraRunning = false;
@@ -70,7 +70,7 @@ async function save() {
   }
 }
 
-// 載入雲端進度 (當登入名稱時觸發)
+// 載入雲端進度 (當登入名稱時觸發，僅當記錄存在時才覆蓋資料)
 async function loadCloudData(playerName) {
   try {
     const doc = await db.collection("players").doc(playerName).get();
@@ -78,8 +78,10 @@ async function loadCloudData(playerName) {
       data = doc.data();
       localStorage.setItem("squatRPG", JSON.stringify(data));
       console.log("☁ 已成功載入 Firebase 雲端進度！");
-      refreshTop();
+    } else {
+      console.log("🆕 偵測到新勇者，使用初始預設值（硬幣 1000）！");
     }
+    refreshTop();
   } catch (err) {
     console.error("☁ 讀取雲端進度失敗：", err);
   }
@@ -96,9 +98,14 @@ async function startGame() {
   const name = nameInput ? nameInput.value.trim() : "";
   if (name === "") { alert("請先輸入勇者名稱"); return; }
   
+  // 1. 每次輸入名字，先還原成乾淨的預設資料 (初始硬幣 1000)
+  data = JSON.parse(JSON.stringify(defaultData));
   data.name = name;
-  // 試圖下載雲端紀錄，若有存檔則自動覆蓋
+
+  // 2. 若雲端/資料庫存在該名字的紀錄，則讀取並覆蓋
   await loadCloudData(name);
+
+  // 3. 儲存最新狀態並進入大廳
   save();
   
   showScreen("lobbyScreen");
@@ -137,7 +144,7 @@ function initMobileGps() {
       lastPosition = coords; return;
     }
     if (currentSpeedKmh > MAX_SPEED_KMH) {
-      if(msgEl) { msgEl.textContent = "⚠️️ 速度過快！遠征暫停計算"; msgEl.className = "walk-msg warn"; }
+      if(msgEl) { msgEl.textContent = "⚠ 速度過快！遠征暫停計算"; msgEl.className = "walk-msg warn"; }
       lastPosition = coords; return;
     }
 
